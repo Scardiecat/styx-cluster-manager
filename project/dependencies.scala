@@ -15,8 +15,8 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-stream-experimental" % Version.http,
     "com.typesafe.akka" %% "akka-http-core-experimental" % Version.http,
     "com.typesafe.akka" %% "akka-http-experimental" % Version.http,
+    "com.typesafe.akka" %% "akka-http-spray-json-experimental" % Version.http,
     "org.scardiecat" %% "styx-utils" % "0.0.4",
-    "org.scardiecat" %% "styx-akka-guice" % "0.0.2",
-    "com.github.scopt" %% "scopt" % "3.3.0"
+    "org.scardiecat" %% "styx-akka-guice" % "0.0.2"
   )
 }

@@ -1,5 +1,5 @@
-import NativePackagerHelper._
-
+enablePlugins(AshScriptPlugin)
+enablePlugins(DockerPlugin)
 
 val commonSettings = Seq(
   organization := "org.scardiecat",
@@ -17,7 +17,8 @@ val commonSettings = Seq(
 )
 
 val dockerSettings = Seq(
-  dockerExposedPorts := Seq(2551),
+  dockerBaseImage := "frolvlad/alpine-oraclejdk8",
+  dockerExposedPorts := Seq(2551,8080),
   maintainer in Docker := "Ralf Mueller <docker@scardiecat.org>"
 )
 
