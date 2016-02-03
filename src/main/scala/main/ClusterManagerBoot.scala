@@ -11,6 +11,8 @@ import org.scardiecat.styx.utils.commandline.CommandlineParser
 import net.codingwell.scalaguice.InjectorExtensions._
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
+import akka.actor.ActorSystem
+import org.scradiecat.styx.clustermanager.membership.ClusterManagerInventory
 
 object ClusterManagerBoot extends App {
 
@@ -29,11 +31,14 @@ object ClusterManagerBoot extends App {
   implicit val executionContext = system.dispatcher
   implicit val materializer = ActorMaterializer()
 
+// register actor
+
+  val monitorActor = system.actorOf(ClusterManagerInventory.props(), "ClusterManagerInventory")
 
 //
 //  override val config = ConfigFactory.load()
 //  override val logger = Logging(system, getClass)
 
-  Http().bindAndHandle(ClusterManagerService.ClusterRoute, config.getString("http.interface"), config.getInt("http.port"))
+  Http().bindAndHandle(ClusterManagerService.ClusterRoute(monitorActor), config.getString("http.interface"), config.getInt("http.port"))
 
 }
