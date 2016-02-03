@@ -50,18 +50,14 @@ object ClusterManagerService  extends JsonSupport{
         }
       }~
       path("status") {
-        get {
-          complete {
-            route.status().map(_ match {
-              case message: ClusterStatusResponse => message
-            })
+        respondWithHeader(`Cache-Control`(`proxy-revalidate`, `no-cache`)) {
+          get {
+            complete {
+              route.status().map(_ match {
+                case message: ClusterStatusResponse => message
+              })
+            }
           }
-
-//          val member = ClusterMember("Test")
-//          var list = ArrayBuffer[ClusterMember]()
-//          list += member
-//          val clusterList = ClusterStatusResponse(list.toList)
-//          complete(clusterList)
         }
       }
     }
