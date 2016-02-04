@@ -90,7 +90,7 @@ class ClusterManagerInventory  extends Actor with ActorLogging {
       inventory.foreach {
         case(key, value) =>
           list += ClusterMember(
-            ClusterMemberUniqueAdress(
+            ClusterMemberUniqueAddress(
               ClusterMemberAddress(value.uniqueAddress.address.protocol
                 , value.uniqueAddress.address.system
                 , value.uniqueAddress.address.host

@@ -6,9 +6,10 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.headers.CacheDirectives.{`proxy-revalidate`, `no-cache`}
 import akka.http.scaladsl.model.headers.`Cache-Control`
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.ExceptionHandler
+import akka.http.scaladsl.server.{Directives, ExceptionHandler}
 import akka.util.Timeout
 import org.scardiecat.styx.clustermanager.api._
+import org.scradiecat.styx.clustermanager.membership.{MemberManagement, ClusterManagerInventory}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext
@@ -17,17 +18,25 @@ import spray.json._
 import akka.pattern.ask
 import scala.concurrent.Future
 
-trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
+trait JsonSupport extends  SprayJsonSupport with DefaultJsonProtocol {
   implicit val clusterMemberAdress = jsonFormat4(ClusterMemberAddress)
-  implicit val clusterMemberUniqueAdress = jsonFormat2(ClusterMemberUniqueAdress)
+  implicit val clusterMemberUniqueAdress = jsonFormat2(ClusterMemberUniqueAddress)
   implicit val clusterMember = jsonFormat3(ClusterMember)
   implicit val clusterStatusResponse = jsonFormat1(ClusterStatusResponse)
+  implicit val leaveMember = jsonFormat1(LeaveMember)
+  implicit val downMember = jsonFormat1(DownMember)
 }
 
-class RequestHelper (monitor:ActorRef)(implicit timeout:Timeout) {
+class RequestHelper (monitorActor:ActorRef, managerActor:ActorRef)(implicit timeout:Timeout) {
 
   def status(): Future[Any] =
-    this.monitor ? ClusterStatus
+    monitorActor ? ClusterStatus
+
+  def leave(leaveMember: LeaveMember) : Future[Any] =
+    managerActor ? leaveMember
+
+  def down(downMember: DownMember) : Future[Any] =
+    managerActor ? downMember
 }
 object ClusterManagerService  extends JsonSupport{
 
@@ -39,9 +48,9 @@ object ClusterManagerService  extends JsonSupport{
     case ex: GenericException => complete(ex.errorCode, ex.msg)
   }
 
-  def ClusterRoute(monitor:ActorRef)(implicit ec: ExecutionContext, system: ActorSystem) =
+  def ClusterRoute(monitorActor:ActorRef, managerActor:ActorRef)(implicit ec: ExecutionContext, system: ActorSystem) =
     handleExceptions(exceptionHandler) {
-      val route = new RequestHelper(monitor)(timeout)
+      val route = new RequestHelper(monitorActor, managerActor)(timeout)
       path("version") {
         respondWithHeader(`Cache-Control`(`proxy-revalidate`, `no-cache`)) {
           get {
@@ -59,6 +68,22 @@ object ClusterManagerService  extends JsonSupport{
             }
           }
         }
-      }
+      }~
+      path("member" / "leave"){
+        post {
+          entity(as[LeaveMember]) { leaveMessage =>
+            route.leave(leaveMessage)
+            complete("Done")
+          }
+        }
+      }~
+        path("member" / "down"){
+          post {
+            entity(as[DownMember]) { downMessage =>
+              route.down(downMessage)
+              complete("Done")
+            }
+          }
+        }
     }
 }

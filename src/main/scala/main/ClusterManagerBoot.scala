@@ -12,7 +12,7 @@ import net.codingwell.scalaguice.InjectorExtensions._
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import akka.actor.ActorSystem
-import org.scradiecat.styx.clustermanager.membership.ClusterManagerInventory
+import org.scradiecat.styx.clustermanager.membership.{MemberManagement, ClusterManagerInventory}
 
 object ClusterManagerBoot extends App {
 
@@ -34,11 +34,12 @@ object ClusterManagerBoot extends App {
 // register actor
 
   val monitorActor = system.actorOf(ClusterManagerInventory.props(), "ClusterManagerInventory")
+  val managerActor = system.actorOf(MemberManagement.props(), "MemberManagement")
 
-//
+  //
 //  override val config = ConfigFactory.load()
 //  override val logger = Logging(system, getClass)
 
-  Http().bindAndHandle(ClusterManagerService.ClusterRoute(monitorActor), config.getString("http.interface"), config.getInt("http.port"))
+  Http().bindAndHandle(ClusterManagerService.ClusterRoute(monitorActor, managerActor), config.getString("http.interface"), config.getInt("http.port"))
 
 }
