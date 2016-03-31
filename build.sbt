@@ -24,7 +24,7 @@ val commonSettings = Seq(
 )
 
 val dockerSettings = Seq(
-  dockerBaseImage := "frolvlad/alpine-oraclejdk8",
+  dockerBaseImage := "anapsix/alpine-java:jdk",
   dockerExposedPorts := Seq(2551,8080),
   maintainer in Docker := "Ralf Mueller <docker@scardiecat.org>",
   dockerRepository := Some("magicmoose-docker-registry.bintray.io/scardiecat")
